@@ -2,6 +2,7 @@ defmodule DiloBot.WordlyWise do
   @path "./static/wordly_wise.rb"
 
   alias Porcelain.Result
+  alias DiloBot.Model.WordlyWise, as: WW
   import Application, only: [get_env: 2]
   require Logger
 
@@ -13,7 +14,7 @@ defmodule DiloBot.WordlyWise do
     end
   end
 
-  def message(%{"name" => name, "grade" => grade, "lesson" => lesson, "columns" => columns, "rows" => rows}) do
+  def message(%WW{name: name, grade: grade, lesson: lesson, columns: columns, rows: rows}) do
     half = Float.ceil(length(columns) / 2) |> trunc
     {first_set, second_set} = Enum.split(columns, half)
     fields = for column_set <- [first_set, second_set] do
@@ -74,7 +75,8 @@ defmodule DiloBot.WordlyWise do
   end
 
   defp save_results(results) do
-    # TODO: Save results
-    results
+    for result <- results do
+      DiloBot.Model.WordlyWise.create_or_update_with!(result)
+    end
   end
 end

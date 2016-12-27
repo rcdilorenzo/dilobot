@@ -1,5 +1,15 @@
 use Mix.Config
 
+config :dilo_bot,
+  ecto_repos: [DiloBot.Repo]
+
+config :dilo_bot, DiloBot.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  database: "dilo_bot_repo",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost"
+
 config :porcelain,
   driver: Porcelain.Driver.Basic
 
@@ -7,6 +17,7 @@ config :slack,
   api_token: "<slack-api-token>"
 
 config :dilo_bot,
+  bot_name: "<slackbot-name>",
   id: "<slack-bot-id>",
   reports_channel: "<posting-channel-id>"
 

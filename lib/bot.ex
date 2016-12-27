@@ -5,6 +5,7 @@ defmodule DiloBot.Bot do
   import Application, only: [get_env: 2]
 
   @id              get_env(:dilo_bot, :id)
+  @name            get_env(:dilo_bot, :bot_name)
   @reports_channel get_env(:dilo_bot, :reports_channel)
 
   def handle_connect(slack, state) do
@@ -13,7 +14,7 @@ defmodule DiloBot.Bot do
   end
 
   def handle_event(message = %{text: text, type: "message"}, slack, state) do
-    if contains?(text, "<@#{@id}>") do
+    if contains?(text, @name) do
       IO.inspect message
       handle_slack_message(message, String.downcase(text), slack)
     end
@@ -48,7 +49,7 @@ defmodule DiloBot.Bot do
         send_message("#{user["user"]["profile"]["first_name"]} asked me to generate this wordly wise report.", @reports_channel, slack)
         for result <- results do
           params = DiloBot.WordlyWise.message(result)
-          Slack.Web.Chat.post_message(@reports_channel, "Wordly wise report for #{result["name"]}:", params)
+          Slack.Web.Chat.post_message(@reports_channel, "Wordly wise report for #{result.name}:", params)
         end
       {:error, error} ->
         send_message("Report generation failed! #{error}", message.channel, slack)
