@@ -6,6 +6,11 @@ defmodule DiloBot.WordlyWise do
 
   def path, do: "#{:code.priv_dir(:dilo_bot)}/static/wordly_wise.rb"
 
+  def match?(text) do
+    ~r/(generate.*(ww|wordly.wise|wordlywise))|((ww|wordly.wise|wordlywise).*report)|(wwr)/i
+    |> Regex.match?(text)
+  end
+
   def handle(username) do
     if username =~ ~r/[a-zA-Z]/ do
       generate(username)

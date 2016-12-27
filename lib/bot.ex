@@ -14,7 +14,7 @@ defmodule DiloBot.Bot do
   end
 
   def handle_event(message = %{text: text, type: "message"}, slack, state) do
-    if contains?(text, @name) do
+    if contains?(text, @name) or contains?(text, @id) do
       IO.inspect message
       handle_slack_message(message, String.downcase(text), slack)
     end
@@ -34,7 +34,7 @@ defmodule DiloBot.Bot do
 
 
   def handle_slack_message(message, text, slack) do
-    if contains?(text, "wordly wise") and contains?(text, "generate") do
+    if DiloBot.WordlyWise.match?(text) do
       user = Slack.Web.Users.info(message.user)
       spawn(fn -> wordly_wise(user, message, slack) end)
     end
