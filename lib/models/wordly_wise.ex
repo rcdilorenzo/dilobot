@@ -12,6 +12,10 @@ defmodule DiloBot.Model.WordlyWise do
     timestamps
   end
 
+  def updated(result) do
+    to_string(result.updated_at) |> String.split(" ") |> List.first
+  end
+
   def create_or_update_with!(params) do
     identification = [
       name: params["name"],

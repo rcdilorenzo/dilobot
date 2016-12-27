@@ -1,10 +1,10 @@
 defmodule DiloBot.WordlyWise do
-  @path "./static/wordly_wise.rb"
-
   alias Porcelain.Result
   alias DiloBot.Model.WordlyWise, as: WW
   import Application, only: [get_env: 2]
   require Logger
+
+  def path, do: "#{:code.priv_dir(:dilo_bot)}/static/wordly_wise.rb"
 
   def handle(username) do
     if username =~ ~r/[a-zA-Z]/ do
@@ -56,7 +56,7 @@ defmodule DiloBot.WordlyWise do
         get_env(:dilo_bot, key)
       }]
     end)
-    case Porcelain.exec(@path, [username], env: env) do
+    case Porcelain.exec(path, [username], env: env) do
       %Result{status: 1, err: err} ->
         Logger.error "Fetch Error: #{err}"
         {:error, "Could not fetch wordly wise data for #{username}."}

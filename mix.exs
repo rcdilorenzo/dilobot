@@ -11,7 +11,8 @@ defmodule DiloBot.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :slack, :porcelain, :poison, :ecto, :postgrex],
+    [applications: [:logger, :slack, :porcelain, :poison, :ecto,
+                    :postgrex, :cowboy, :plug, :table_rex, :basic_auth, :eex],
      mod: {DiloBot, []}]
   end
 
@@ -22,7 +23,11 @@ defmodule DiloBot.Mixfile do
       {:poison, "~> 3.0"},
       {:table_rex, "~> 0.8"},
       {:ecto, "~> 2.0"},
-      {:postgrex, "~> 0.11"}
+      {:postgrex, "~> 0.11"},
+      {:cowboy, "~> 1.0.0"},
+      {:plug, "~> 1.0"},
+      {:basic_auth, "~> 2.1"},
+      {:distillery, "~> 1.0"}
     ]
   end
 end

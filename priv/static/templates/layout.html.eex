@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>DiloBot</title>
+    <style type="text/css">
+      th, td { border: 1px solid black; padding: 5px; }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+
+      <main role="main">
+        <h1>Hello!</h1>
+        <%= EEx.eval_file template, assigns %>
+      </main>
+
+    </div> <!-- /container -->
+  </body>
+</html>

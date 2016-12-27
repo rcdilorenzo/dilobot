@@ -19,7 +19,13 @@ config :slack,
 config :dilo_bot,
   bot_name: "<slackbot-name>",
   id: "<slack-bot-id>",
-  reports_channel: "<posting-channel-id>"
+  reports_channel: "<posting-channel-id>",
+  port: 4001,
+  auth: [
+    username: "<username>",
+    password: "<password>",
+    realm: "<why-auth>"
+  ]
 
 config :dilo_bot,
   ww_keys: [:ww_school_id, :ww_school, :ww_username, :ww_password, :ww_mapping],
