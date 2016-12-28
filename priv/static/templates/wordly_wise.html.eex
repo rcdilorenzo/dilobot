@@ -10,9 +10,10 @@
             <th>Name</th>
             <th>Grade</th>
             <th>Lesson</th>
+            <th>Level</th>
             <th>Activity</th>
             <th>% Correct</th>
-            <th>Updated</th>
+            <th>Created</th>
         </thead>
         <tbody>
             <%= for line <- lines do %>
@@ -20,9 +21,10 @@
                     <td><%= line.name %></td>
                     <td><%= line.grade %></td>
                     <td><%= line.lesson %></td>
+                    <td><%= line.level %></td>
                     <td><%= line.activity %></td>
                     <td><%= line.percent_correct %>%</td>
-                    <td><%= line.updated %></td>
+                    <td><%= line.created %></td>
                 </tr>
             <% end %>
         </tbody>

@@ -45,9 +45,25 @@ class WordlyWise
       last_lesson = page.evaluate_script("$('[name=lessonName] option:last').text()")
       select last_lesson, from: 'lessonName'
       sleep 1
-      data = json_data(name).merge(lesson: last_lesson.to_i)
+      level = select_last_level
+      data = json_data(name).merge(
+        lesson: last_lesson.to_i,
+        level: level
+      )
     end
     data
+  end
+
+  def select_last_level
+    last_selectable_level = page.evaluate_script("$('[name=streamGroupName] option:last').text()")
+    if last_selectable_level.empty?
+      last_selectable_level = /level.\s(\d+)/i.match(page.text)[1].to_f
+    else
+      select last_selectable_level, from: 'streamGroupName'
+      last_selectable_level = last_selectable_level.to_f
+      sleep 1
+    end
+    last_selectable_level
   end
 
   def json_data(name)

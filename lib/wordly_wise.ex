@@ -19,7 +19,8 @@ defmodule DiloBot.WordlyWise do
     end
   end
 
-  def message(%WW{name: name, grade: grade, lesson: lesson, columns: columns, rows: rows}) do
+  def message(%WW{name: name, grade: grade, level: level,
+                  lesson: lesson, columns: columns, rows: rows}) do
     half = Float.ceil(length(columns) / 2) |> trunc
     {first_set, second_set} = Enum.split(columns, half)
     fields = for column_set <- [first_set, second_set] do
@@ -48,10 +49,20 @@ defmodule DiloBot.WordlyWise do
       attachments: [%{
         type: "message",
         color: "#F35A00",
-        text: "Report for #{name} (Grade #{grade}, Lesson #{lesson})",
+        text: "Report for #{name} (Grade #{grade}, Lesson #{lesson}, Level #{level})",
         fields: fields
       }] |> Poison.encode!
     }
+  end
+
+  def print_env do
+    get_env(:dilo_bot, :ww_keys)
+    |> Enum.map(fn (key) ->
+      name = key |> Atom.to_string |> String.upcase
+      value = get_env(:dilo_bot, key) |> String.replace("\n", "") |> inspect
+      "export #{name}=#{value}"
+    end)
+    |> Enum.join("\n")
   end
 
   defp generate(username) do
