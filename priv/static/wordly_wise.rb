@@ -28,7 +28,7 @@ class WordlyWise
   end
 
   def generate_report(username)
-    json = MAPPING[username].map do |name|
+    json = MAPPING[username].flat_map do |name|
       save_report(name)
     end
 
@@ -38,16 +38,16 @@ class WordlyWise
   def save_report(name)
     filename = name.gsub(' ', '-').gsub(',', '').downcase + '-' + Time.now.strftime('%Y-%m-%d_%H-%M-%S') + '.png'
     visit '/academy/reportui/ReportFrames.htm?startPage=STWW3000SnapshotR'
-    data = {}
+    data = []
     within_frame(find('[name=content]')) do
       select name, from: 'studentId'
       sleep 1
-      last_lesson = page.evaluate_script("$('[name=lessonName] option:last').text()")
-      select last_lesson, from: 'lessonName'
-      sleep 1
       level = select_last_level
-      data = json_data(name).merge(
-        lesson: last_lesson.to_i,
+      sleep 1
+      lessons = page.evaluate_script("$('[name=lessonName] option').map(function(opt) { return this.value }).get()")[1..-1]
+      select lessons.last, from: 'lessonName'
+      data << json_data(name).merge(
+        lesson: lessons.last.to_i,
         level: level
       )
     end
