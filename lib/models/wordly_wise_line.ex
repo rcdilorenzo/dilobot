@@ -5,7 +5,7 @@ defmodule WordlyWiseLine do
   alias DiloBot.Model.WordlyWise
 
   def lines(%WordlyWise{} = result) do
-    for row <- result.rows do
+    for row <- result.rows, valid_row?(row)  do
       {:ok, activity, attempt} = List.first(row) |> split_attempt
       %__MODULE__{
         name: result.name,
@@ -18,6 +18,10 @@ defmodule WordlyWiseLine do
         percent_correct: List.last(row) |> percent_to_integer
       }
     end
+  end
+
+  def valid_row?(row) do
+    List.last(row) != "---"
   end
 
   def split_attempt(name) do
