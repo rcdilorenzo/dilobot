@@ -11,12 +11,24 @@ defmodule DiloBot.WordlyWise do
     |> Regex.match?(text)
   end
 
-  def handle(username) do
-    if username =~ ~r/[a-zA-Z]/ do
-      generate(username)
-    else
-      {:error, "Unknown user #{username}"}
+  def handle(channel) do
+    mapping = get_env(:dilo_bot, :ww_channel_mapping)
+    case Map.get(mapping, channel |> String.to_atom) do
+      nil ->
+        {:error, "Wordly wise generation only available in #{available_channels}."}
+      ww_username ->
+        generate(ww_username)
     end
+  end
+
+  defp available_channels do
+    keys = get_env(:dilo_bot, :ww_channel_mapping) |> Map.keys
+    channels = Slack.Web.Channels.list["channels"]
+    |> Enum.filter_map(&(String.to_atom(&1["id"]) in keys), fn
+      (%{"id" => id, "name" => name}) ->
+        "<##{id}|#{name}>"
+    end)
+    |> Enum.join(", ")
   end
 
   def message(%WW{name: name, grade: grade, level: level,
@@ -59,23 +71,28 @@ defmodule DiloBot.WordlyWise do
     get_env(:dilo_bot, :ww_keys)
     |> Enum.map(fn (key) ->
       name = key |> Atom.to_string |> String.upcase
-      value = get_env(:dilo_bot, key) |> String.replace("\n", "") |> inspect
-      "export #{name}=#{value}"
+      value = case get_env(:dilo_bot, key) do
+                map when is_map(map) ->
+                  Poison.encode!(map)
+                any ->
+                  any
+              end
+      "export #{name}=#{inspect value}"
     end)
     |> Enum.join("\n")
   end
 
-  defp generate(username) do
+  defp generate(user) do
     env = get_env(:dilo_bot, :ww_keys) |> Enum.reduce([], fn (key, list) ->
       list ++ [{
         Atom.to_string(key) |> String.upcase,
         get_env(:dilo_bot, key)
       }]
     end)
-    case Porcelain.exec(path, [username], env: env) do
+    case Porcelain.exec(path, [user], env: env) do
       %Result{status: 1, err: err} ->
         Logger.error "Fetch Error: #{err}"
-        {:error, "Could not fetch wordly wise data for #{username}."}
+        {:error, "Could not fetch wordly wise data for #{inspect user}."}
       %Result{status: 0, out: output} ->
         parse_result(output)
     end

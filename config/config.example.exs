@@ -28,12 +28,9 @@ config :dilo_bot,
   ]
 
 config :dilo_bot,
-  ww_keys: [:ww_school_id, :ww_school, :ww_username, :ww_password, :ww_mapping],
+  ww_keys: [:ww_school_id, :ww_school, :ww_username, :ww_password],
   ww_school_id: "<wordly-wise-school-id>",
   ww_school: "<wordly-wise-school-name>",
   ww_username: "<username>",
   ww_password: "<password>",
-  ww_mapping: "<slack-usernames-to-wordly-wise-users-in-json-encoded-form>"
-
-# Mapping Example ^
-# "{\"my-slack-username\": [\"Last, First\", \"Wordly Wise, User\"]}"
+  ww_channel_mapping: %{a_slack_channel_name: "<wordly-wise-name>"}

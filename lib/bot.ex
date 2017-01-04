@@ -14,8 +14,7 @@ defmodule DiloBot.Bot do
   end
 
   def handle_event(message = %{text: text, type: "message"}, slack, state) do
-    if contains?(text, @name) or contains?(text, @id) do
-      IO.inspect message
+    unless message.user == @id do
       handle_slack_message(message, String.downcase(text), slack)
     end
     {:ok, state}
@@ -42,14 +41,13 @@ defmodule DiloBot.Bot do
 
   def wordly_wise(user, message, slack) do
     send_message("Generating wordly wise report...", message.channel, slack)
-    indicate_typing(@reports_channel, slack)
-    case DiloBot.WordlyWise.handle(user["user"]["name"]) do
+    indicate_typing(message.channel, slack)
+    case DiloBot.WordlyWise.handle(message.channel) do
       {:ok, results} ->
-        IO.inspect results
-        send_message("#{user["user"]["profile"]["first_name"]} asked me to generate this wordly wise report.", @reports_channel, slack)
+        send_message("#{user["user"]["profile"]["first_name"]} asked me to generate this wordly wise report.", message.channel, slack)
         for result <- results do
           params = DiloBot.WordlyWise.message(result)
-          Slack.Web.Chat.post_message(@reports_channel, "Wordly wise report for #{result.name}:", params)
+          Slack.Web.Chat.post_message(message.channel, "Wordly wise report for #{result.name}:", params)
         end
       {:error, error} ->
         send_message("Report generation failed! #{error}", message.channel, slack)

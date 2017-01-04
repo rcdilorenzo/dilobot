@@ -17,7 +17,6 @@ class WordlyWise
   SCHOOL = ENV['WW_SCHOOL']
   USERNAME = ENV['WW_USERNAME']
   PASSWORD = ENV['WW_PASSWORD']
-  MAPPING = JSON.parse(ENV['WW_MAPPING'])
 
   def login!
     visit '/academy/ProcessMngLogin.do?database=db01'
@@ -28,11 +27,7 @@ class WordlyWise
   end
 
   def generate_report(username)
-    json = MAPPING[username].flat_map do |name|
-      save_report(name)
-    end
-
-    JSON.generate(json)
+    JSON.generate(save_report(username))
   end
 
   def save_report(name)
@@ -46,6 +41,7 @@ class WordlyWise
       sleep 1
       lessons = page.evaluate_script("$('[name=lessonName] option').map(function(opt) { return this.value }).get()")[1..-1]
       select lessons.last, from: 'lessonName'
+      sleep 1
       data << json_data(name).merge(
         lesson: lessons.last.to_i,
         level: level
