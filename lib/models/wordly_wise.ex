@@ -1,6 +1,7 @@
 defmodule DiloBot.Model.WordlyWise do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   schema "wordly_wise" do
     field :name, :string
@@ -12,6 +13,32 @@ defmodule DiloBot.Model.WordlyWise do
 
     timestamps
   end
+
+  def names do
+    names = from(ww in __MODULE__, group_by: ww.name, select: ww.name)
+    |> DiloBot.Repo.all
+    ["All"] ++ names
+  end
+
+  def results(nil, sort_func), do: results("All", sort_func)
+
+  def results("All", sort_func) do
+    from(ww in __MODULE__, order_by: [desc: :grade, desc: :lesson])
+    |> DiloBot.Repo.all
+    |> Enum.flat_map(&WordlyWiseLine.lines/1)
+    |> sort_func.()
+    |> Enum.group_by(&(&1.name))
+  end
+
+  def results(name, sort_func) when is_binary(name) do
+    from(ww in __MODULE__, where: ww.name == ^name, order_by: [desc: :grade, desc: :lesson])
+    |> DiloBot.Repo.all
+    |> Enum.flat_map(&WordlyWiseLine.lines/1)
+    |> sort_func.()
+    |> Enum.group_by(&(&1.name))
+  end
+
+  def results(_name, _sort_func), do: %{}
 
   def created(result) do
     to_string(result.inserted_at) |> String.split(" ") |> List.first

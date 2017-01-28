@@ -1,32 +1,35 @@
-<h2>Wordly Wise Data</h2>
-
-<a href="/wordly_wise/reports">Default Sort</a>
-<a href="/wordly_wise/reports?sort=activity">Sort By Activity</a>
-
-<%= for {name, lines} <- results do %>
-    <h3><%= name %></h3>
-    <table>
-        <thead>
-            <th>Name</th>
-            <th>Grade</th>
-            <th>Lesson</th>
-            <th>Level</th>
-            <th>Activity</th>
-            <th>% Correct</th>
-            <th>Created</th>
-        </thead>
-        <tbody>
-            <%= for line <- lines do %>
-                <tr>
-                    <td><%= line.name %></td>
-                    <td><%= line.grade %></td>
-                    <td><%= line.lesson %></td>
-                    <td><%= line.level %></td>
-                    <td><%= line.activity %></td>
-                    <td><%= line.percent_correct %>%</td>
-                    <td><%= line.created %></td>
+<div id="wordly-wise">
+    <h2>Wordly Wise Users</h2>
+    <ul>
+        <li v-for="name in names">
+            <a v-on:click="goToName(name)">{{ name }}</a>
+        </li>
+    </ul>
+    <div v-for="(lines, name) in results">
+        <h3>{{ name }}</h3>
+        <table>
+            <thead>
+                <th v-on:click="sortByColumn('name')">Name</th>
+                <th v-on:click="sortByColumn('grade')">Grade</th>
+                <th v-on:click="sortByColumn('lesson')">Lesson</th>
+                <th v-on:click="sortByColumn('level')">Level</th>
+                <th v-on:click="sortByColumn('activity')">Activity</th>
+                <th v-on:click="sortByColumn('percent_correct')">% Correct</th>
+                <th v-on:click="sortByColumn('created')">Created</th>
+            </thead>
+            <tbody>
+                <tr v-for="line in lines">
+                    <td>{{ line.name }}</td>
+                    <td>{{ line.grade }}</td>
+                    <td>{{ line.lesson }}</td>
+                    <td>{{ line.level }}</td>
+                    <td>{{ line.activity }}</td>
+                    <td>{{ line.percent_correct }}%</td>
+                    <td>{{ line.created }}</td>
                 </tr>
-            <% end %>
-        </tbody>
-    </table>
-<% end %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script><%= render_js.("wordly_wise") %></script>

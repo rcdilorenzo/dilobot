@@ -25,7 +25,7 @@ defmodule DiloBot.Mixfile do
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
       {:cowboy, "~> 1.0.0"},
-      {:plug, "~> 1.0"},
+      {:plug, "~> 1.3"},
       {:basic_auth, "~> 2.1"},
       {:distillery, "~> 1.0"}
     ]
