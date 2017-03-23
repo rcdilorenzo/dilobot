@@ -51,6 +51,25 @@ var app = new Vue({
                 object[name] = sorted;
                 return Object.assign(memo, object);
             }, {});
+        },
+        duration: function(line) {
+            var minutes = Math.floor(line.seconds / 60);
+            var seconds = line.seconds % 60;
+            return (seconds >= 10) ? (minutes + ':' + seconds) : (minutes + ':0' + seconds);
+        },
+        isActive: function(name) {
+            if (name != 'All') {
+                return name == currentQuery().name;
+            } else {
+                return currentQuery.name == null || currentQuery().name == 'All';
+            }
+        },
+        sortArrow: function(column) {
+            if (this.sort.column == column) {
+                return this.sort.ascending ? '&#x25B2' : '&#x25BC';
+            } else {
+                return '';
+            }
         }
     }
 });

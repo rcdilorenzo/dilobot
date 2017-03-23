@@ -31,23 +31,43 @@ class WordlyWise
   end
 
   def save_report(name)
-    filename = name.gsub(' ', '-').gsub(',', '').downcase + '-' + Time.now.strftime('%Y-%m-%d_%H-%M-%S') + '.png'
+    load_normal_activities(name) + load_test_activities(name)
+  end
+
+  def load_normal_activities(name)
+    # filename = name.gsub(' ', '-').gsub(',', '').downcase + '-' + Time.now.strftime('%Y-%m-%d_%H-%M-%S') + '.png'
     visit '/academy/reportui/ReportFrames.htm?startPage=STWW3000SnapshotR'
-    data = []
-    within_frame(find('[name=content]')) do
-      select name, from: 'studentId'
-      sleep 1
+    activities = []
+    within_content do
+      select_student_id(name)
       level = select_last_level
-      sleep 1
       lessons = page.evaluate_script("$('[name=lessonName] option').map(function(opt) { return this.value }).get()")[1..-1]
       select lessons.last, from: 'lessonName'
       sleep 1
-      data << json_data(name).merge(
-        lesson: lessons.last.to_i,
-        level: level
-      )
+      activities.concat(json_data(name, lessons.last.to_i, level))
     end
-    data
+    activities
+  end
+
+  def load_test_activities(name)
+    visit '/academy/reportui/ReportFrames.htm?startPage=STWW3000TestResults'
+    activities = []
+    within_content do
+      select_student_id(name)
+      level = select_last_level
+      activities.concat(json_test_data(name, level))
+    end
+    activities
+  end
+
+  private
+  def within_content(&block)
+    within_frame(find('[name=content]')) { block.call() }
+  end
+
+  def select_student_id(name)
+    select name, from: 'studentId'
+    sleep 1
   end
 
   def select_last_level
@@ -59,22 +79,111 @@ class WordlyWise
       last_selectable_level = last_selectable_level.to_f
       sleep 1
     end
+    sleep 1
     last_selectable_level
   end
 
-  def json_data(name)
-    grade = /grade.\s*(\d+)/i.match(page.text)[1].to_i
-    rows = all('#_sortableTable tbody tr').map do |e|
+  def json_data(name, lesson, level)
+    grade = find_grade
+    rows = find_text_of_rows
+    rows.map do |row|
+      {
+        name: name,
+        grade: grade,
+        lesson: lesson,
+        level: level,
+        activity: row[0],
+        seconds: duration_to_seconds(row[1]),
+        score: percent_to_score(row[2])
+      }
+    end
+  end
+
+  def json_test_data(name, level)
+    grade = find_grade
+    rows = find_text_of_rows
+    recursive_process_test_row(rows[0], rows[1..-1], []).map do |data|
+      data.merge({name: name, grade: grade, level: level})
+    end
+  end
+
+  def recursive_process_test_row(row, rows, output)
+    return output unless row
+    recursive_process_test_row(
+      rows[0],
+      rows[1..-1],
+      output + [pre_test(row), post_test(row)].compact
+    )
+  end
+
+  def pre_test(row)
+    if row[1] != '---'
+      {
+        activity: 'Pre-Test',
+        lesson: parse_lesson(row[0]),
+        seconds: duration_to_seconds(row[1], true),
+        score: percent_to_score(row[2]),
+        date: Date.parse(row[3])
+      }
+    else
+      nil
+    end
+  end
+
+  def post_test(row)
+    if row[4] != '---'
+      {
+        activity: 'Post-Test',
+        lesson: parse_lesson(row[0]),
+        seconds: duration_to_seconds(row[4], true),
+        score: percent_to_score(row[5]),
+        date: Date.parse(row[6])
+      }
+    else
+      nil
+    end
+  end
+
+  def find_grade
+    /grade.\s*(\d+)/i.match(page.text)[1].to_i
+  end
+
+  def find_text_of_rows
+    all('#_sortableTable tbody tr').map do |e|
       within(e) do
         all('td').map(&:text)
       end
     end
-    {
-      name: name,
-      grade: grade,
-      columns: all('#_sortableTable thead td').map(&:text),
-      rows: rows
-    }
+  end
+
+  def parse_lesson(lesson_description)
+    regex = /Lesson (?<lesson>\d+)/
+    match_data = regex.match(lesson_description)
+    if match_data
+      match_data['lesson'].to_i
+    else
+      throw "Cannot extract lesson from description: #{lesson_description}"
+    end
+  end
+
+  def duration_to_seconds(duration, compact=false)
+    regex = compact ? /(?<min>\d+):(?<sec>\d+)/ : /(?<min>\d+) min (?<sec>\d+) sec/
+    match_data = regex.match(duration)
+    if match_data
+      match_data['min'].to_i * 60 + match_data['sec'].to_i
+    else
+      0
+    end
+  end
+
+  def percent_to_score(percent)
+    regex = /(?<percent>\d+)%/
+    match_data = regex.match(percent)
+    if match_data
+      match_data['percent'].to_i
+    else
+      0
+    end
   end
 end
 

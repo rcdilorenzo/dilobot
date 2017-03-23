@@ -1,6 +1,6 @@
 defmodule DiloBot.WordlyWise do
   alias Porcelain.Result
-  alias DiloBot.Model.WordlyWise, as: WW
+  alias WordlyWiseActivity, as: WWA
   import Application, only: [get_env: 2]
   require Logger
 
@@ -31,38 +31,35 @@ defmodule DiloBot.WordlyWise do
     |> Enum.join(", ")
   end
 
-  def message(%WW{name: name, grade: grade, level: level,
-                  lesson: lesson, columns: columns, rows: rows}) do
-    half = Float.ceil(length(columns) / 2) |> trunc
-    {first_set, second_set} = Enum.split(columns, half)
-    fields = for column_set <- [first_set, second_set] do
-      Enum.reduce(0..(length(column_set) - 1), %{short: true, title: "", value: ""}, fn
-        0, map ->
-          column = List.first(column_set)
-          row_index = Enum.find_index(columns, &(&1 == column))
-          Map.merge(map, %{
-            title: column,
-            value: Enum.map(rows, &Enum.at(&1, row_index)) |> Enum.join("\n")
-          })
-        i, %{title: title, value: value} = map ->
-          column = Enum.at(column_set, i)
-          row_index = Enum.find_index(columns, &(&1 == column))
-          Map.merge(map, %{
-            title: title <> " / " <> column,
-            value: String.split(value, "\n")
-            |> Enum.zip(Enum.map(rows, &Enum.at(&1, row_index)))
-            |> Enum.map(fn ({first, second}) -> first <> " / " <> second end)
-            |> Enum.join("\n")
-          })
-      end)
-    end
+  def message(activities = [%WWA{name: name} | _tail]) do
+    filtered = Enum.filter(activities, fn (activity) ->
+      activity.date == WWA.today() or not WWA.test_activity?(activity)
+    end)
+
+    first_column = Enum.reduce(filtered, "", fn
+      (activity, "") ->
+        "#{WWA.identification(activity)}: #{activity.activity}"
+      (activity, string) ->
+        "#{string}\n#{WWA.identification(activity)}: #{activity.activity}"
+    end)
+
+    second_column = Enum.reduce(filtered, "", fn
+      (activity, "") ->
+        "#{WWA.compact_date(activity)} / #{WWA.duration(activity)} / #{WWA.score(activity)}"
+      (activity, string) ->
+        "#{string}\n#{WWA.compact_date(activity)} / #{WWA.duration(activity)} / #{WWA.score(activity)}"
+    end)
+
     %{
       as_user: true,
       attachments: [%{
         type: "message",
         color: "#F35A00",
-        text: "Report for #{name} (Grade #{grade}, Lesson #{lesson}, Level #{level})",
-        fields: fields
+        text: "Report for #{name}",
+        fields: [
+          %{short: true, title: "Activity", value: first_column},
+          %{short: true, title: "Date / Time / Score", value: second_column}
+        ]
       }] |> Poison.encode!
     }
   end
@@ -109,7 +106,7 @@ defmodule DiloBot.WordlyWise do
 
   defp save_results(results) do
     for result <- results do
-      DiloBot.Model.WordlyWise.create_or_update_with!(result)
+      WordlyWiseActivity.create_or_update_with!(result)
     end
   end
 end

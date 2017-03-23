@@ -8,10 +8,7 @@
     <meta name="author" content="">
 
     <title>DiloBot</title>
-    <script><%= vendor_js %></script>
-    <style type="text/css">
-      th, td { border: 1px solid black; padding: 5px; }
-    </style>
+    <link href="/assets/css/style.css" rel="stylesheet">
   </head>
 
   <body>
@@ -22,5 +19,9 @@
       </main>
 
     </div> <!-- /container -->
+    <script src="/assets/js/vue.js"></script>
+    <script src="/assets/js/axios.min.js"></script>
+    <script src="/assets/js/underscore-min.js"></script>
+    <script src="/assets/js/query.min.js"></script>
   </body>
 </html>

@@ -45,10 +45,8 @@ defmodule DiloBot.Bot do
     case DiloBot.WordlyWise.handle(message.channel) do
       {:ok, results} ->
         send_message("#{user["user"]["profile"]["first_name"]} asked me to generate this wordly wise report.", message.channel, slack)
-        for result <- results do
-          params = DiloBot.WordlyWise.message(result)
-          Slack.Web.Chat.post_message(message.channel, "Wordly wise report for #{result.name}:", params)
-        end
+        params = DiloBot.WordlyWise.message(results)
+        Slack.Web.Chat.post_message(message.channel, "Wordly wise report for #{hd(results).name}:", params)
       {:error, error} ->
         send_message("Report generation failed! #{error}", message.channel, slack)
     end

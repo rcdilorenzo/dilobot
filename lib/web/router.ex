@@ -2,19 +2,22 @@ defmodule DiloBot.Router do
   use Plug.Router
   use DiloBot.Web.Render
 
-  alias DiloBot.Model.WordlyWise
-
   plug Plug.Logger
   plug BasicAuth, use_config: {:dilo_bot, :auth}
+  plug Plug.Static,
+    at: "/assets",
+    from: :dilo_bot,
+    only: ~w(js css)
+
   plug :fetch_query_params
   plug :match
   plug :dispatch
 
   get "/wordly_wise/reports" do
-    results = WordlyWise.results(conn.params["name"], &sort_lines(&1, conn.params))
+    results = WordlyWiseActivity.results(conn.params["name"])
     render_page conn, "wordly_wise",
       results: results,
-      names: WordlyWise.names
+      names: WordlyWiseActivity.names
   end
 
   forward "/api", to: DiloBot.ApiRouter

@@ -1,31 +1,45 @@
 <div id="wordly-wise">
     <h2>Wordly Wise Users</h2>
-    <ul>
-        <li v-for="name in names">
-            <a v-on:click="goToName(name)">{{ name }}</a>
+    <ul class="names">
+        <li v-bind:class="{active: isActive(name)}" v-for="name in names">
+            <a class="clickable" v-on:click="goToName(name)">{{ name }}</a>
         </li>
     </ul>
     <div v-for="(lines, name) in results">
         <h3>{{ name }}</h3>
         <table>
             <thead>
-                <th v-on:click="sortByColumn('name')">Name</th>
-                <th v-on:click="sortByColumn('grade')">Grade</th>
-                <th v-on:click="sortByColumn('lesson')">Lesson</th>
-                <th v-on:click="sortByColumn('level')">Level</th>
-                <th v-on:click="sortByColumn('activity')">Activity</th>
-                <th v-on:click="sortByColumn('percent_correct')">% Correct</th>
-                <th v-on:click="sortByColumn('created')">Created</th>
+                <th class="clickable" v-on:click="sortByColumn('name')">
+                    Name <span v-html="sortArrow('name')"></span>
+                </th>
+                <th class="clickable" v-on:click="sortByColumn('level')">
+                    Level <span v-html="sortArrow('level')"></span>
+                </th>
+                <th class="clickable" v-on:click="sortByColumn('lesson')">
+                    Lesson <span v-html="sortArrow('lesson')"></span>
+                </th>
+                <th class="clickable" v-on:click="sortByColumn('activity')">
+                    Activity <span v-html="sortArrow('activity')"></span>
+                </th>
+                <th class="clickable" v-on:click="sortByColumn('score')">
+                    Score <span v-html="sortArrow('score')"></span>
+                </th>
+                <th class="clickable" v-on:click="sortByColumn('seconds')">
+                    Duration <span v-html="sortArrow('seconds')"></span>
+                </th>
+                <th class="clickable" v-on:click="sortByColumn('date')">
+                    Date <span v-html="sortArrow('date')"></span>
+                </th>
             </thead>
             <tbody>
                 <tr v-for="line in lines">
                     <td>{{ line.name }}</td>
-                    <td>{{ line.grade }}</td>
-                    <td>{{ line.lesson }}</td>
                     <td>{{ line.level }}</td>
+                    <td>{{ line.lesson }}</td>
                     <td>{{ line.activity }}</td>
-                    <td>{{ line.percent_correct }}%</td>
-                    <td>{{ line.created }}</td>
+                    <td>{{ line.score }}%</td>
+                    <td>{{ duration(line) }}</td>
+                    <td>{{ line.date }}</td>
                 </tr>
             </tbody>
         </table>
