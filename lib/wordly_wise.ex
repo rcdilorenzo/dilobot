@@ -6,51 +6,6 @@ defmodule DiloBot.WordlyWise do
 
   def path, do: "#{:code.priv_dir(:dilo_bot)}/static/wordly_wise.rb"
 
-  def available_channels do
-    keys = get_env(:dilo_bot, :ww_channel_mapping) |> Map.keys
-    Slack.Web.Channels.list |> IO.inspect
-    channels = Slack.Web.Channels.list["channels"]
-    |> Enum.filter_map(&(String.to_atom(&1["id"]) in keys), fn
-      (%{"id" => id, "name" => name}) ->
-        "<##{id}|#{name}>"
-    end)
-    |> Enum.join(", ")
-  end
-
-  def message(activities = [%WWA{name: name} | _tail]) do
-    filtered = Enum.filter(activities, fn (activity) ->
-      activity.date == WWA.today() or not WWA.test_activity?(activity)
-    end)
-
-    first_column = Enum.reduce(filtered, "", fn
-      (entry, "") ->
-        "#{WWA.identification(entry)}: #{entry.activity}"
-      (entry, string) ->
-        "#{string}\n#{WWA.identification(entry)}: #{entry.activity}"
-    end)
-
-    second_column = Enum.reduce(filtered, "", fn
-      (entry, "") ->
-        "#{WWA.compact_date(entry)} / #{WWA.duration(entry)} / #{WWA.score(entry)}"
-      (entry, string) ->
-        "#{string}\n#{WWA.compact_date(entry)} / #{WWA.duration(entry)} / #{WWA.score(entry)}"
-    end)
-
-    %{
-      as_user: true,
-      response_type: "in_channel",
-      attachments: [%{
-        type: "message",
-        color: "#F35A00",
-        text: "Report for #{name}",
-        fields: [
-          %{short: true, title: "Activity", value: first_column},
-          %{short: true, title: "Date / Time / Score", value: second_column}
-        ]
-      }]
-    }
-  end
-
   def print_env do
     get_env(:dilo_bot, :ww_keys)
     |> Enum.map(fn (key) ->

@@ -1,17 +1,15 @@
 defmodule DiloBot do
   use Application
   import Application, only: [get_env: 2]
+  import Plug.Cowboy, only: [child_spec: 1]
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
+    port = get_env(:dilo_bot, :port)
 
     children = [
-      worker(Slack.Bot, [DiloBot.Bot, [], api_token()]),
       supervisor(DiloBot.Repo, []),
-      Plug.Adapters.Cowboy.child_spec(:http, DiloBot.Router, [],
-        [port: get_env(:dilo_bot, :port)]),
-      Plug.Adapters.Cowboy.child_spec(:http, DiloBot.SlackRouter, [],
-        [port: get_env(:dilo_bot, :slack_port)])
+      child_spec(scheme: :http, plug: DiloBot.Router, options: [port: port])
     ]
 
     opts = [strategy: :one_for_one, name: DiloBot.Supervisor]
