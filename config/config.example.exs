@@ -14,13 +14,14 @@ config :porcelain,
   driver: Porcelain.Driver.Basic
 
 config :slack,
-  api_token: "<slack-api-token>"
+  bot_access_token: "<slack-bot-access-token>",
+  oauth_access_token: "<slack-oauth-access-token>",
+  verification_token: "<slack-verification-token>"
 
 config :dilo_bot,
-  bot_name: "<slackbot-name>",
-  id: "<slack-bot-id>",
   reports_channel: "<posting-channel-id>",
   port: 4001,
+  slack_port: 4011,
   auth: [
     username: "<username>",
     password: "<password>",

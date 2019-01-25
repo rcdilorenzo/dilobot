@@ -6,23 +6,9 @@ defmodule DiloBot.WordlyWise do
 
   def path, do: "#{:code.priv_dir(:dilo_bot)}/static/wordly_wise.rb"
 
-  def match?(text) do
-    ~r/(generate.*(ww|wordly.wise|wordlywise))|((ww|wordly.wise|wordlywise).*report)|(wwr)/i
-    |> Regex.match?(text)
-  end
-
-  def handle(channel) do
-    mapping = get_env(:dilo_bot, :ww_channel_mapping)
-    case Map.get(mapping, channel |> String.to_atom) do
-      nil ->
-        {:error, "Wordly wise generation only available in #{available_channels}."}
-      ww_username ->
-        generate(ww_username)
-    end
-  end
-
-  defp available_channels do
+  def available_channels do
     keys = get_env(:dilo_bot, :ww_channel_mapping) |> Map.keys
+    Slack.Web.Channels.list |> IO.inspect
     channels = Slack.Web.Channels.list["channels"]
     |> Enum.filter_map(&(String.to_atom(&1["id"]) in keys), fn
       (%{"id" => id, "name" => name}) ->
@@ -37,21 +23,22 @@ defmodule DiloBot.WordlyWise do
     end)
 
     first_column = Enum.reduce(filtered, "", fn
-      (activity, "") ->
-        "#{WWA.identification(activity)}: #{activity.activity}"
-      (activity, string) ->
-        "#{string}\n#{WWA.identification(activity)}: #{activity.activity}"
+      (entry, "") ->
+        "#{WWA.identification(entry)}: #{entry.activity}"
+      (entry, string) ->
+        "#{string}\n#{WWA.identification(entry)}: #{entry.activity}"
     end)
 
     second_column = Enum.reduce(filtered, "", fn
-      (activity, "") ->
-        "#{WWA.compact_date(activity)} / #{WWA.duration(activity)} / #{WWA.score(activity)}"
-      (activity, string) ->
-        "#{string}\n#{WWA.compact_date(activity)} / #{WWA.duration(activity)} / #{WWA.score(activity)}"
+      (entry, "") ->
+        "#{WWA.compact_date(entry)} / #{WWA.duration(entry)} / #{WWA.score(entry)}"
+      (entry, string) ->
+        "#{string}\n#{WWA.compact_date(entry)} / #{WWA.duration(entry)} / #{WWA.score(entry)}"
     end)
 
     %{
       as_user: true,
+      response_type: "in_channel",
       attachments: [%{
         type: "message",
         color: "#F35A00",
@@ -60,7 +47,7 @@ defmodule DiloBot.WordlyWise do
           %{short: true, title: "Activity", value: first_column},
           %{short: true, title: "Date / Time / Score", value: second_column}
         ]
-      }] |> Poison.encode!
+      }]
     }
   end
 
@@ -79,7 +66,7 @@ defmodule DiloBot.WordlyWise do
     |> Enum.join("\n")
   end
 
-  defp generate(user) do
+  def generate(user) do
     env = get_env(:dilo_bot, :ww_keys) |> Enum.reduce([], fn (key, list) ->
       list ++ [{
         Atom.to_string(key) |> String.upcase,
@@ -99,7 +86,8 @@ defmodule DiloBot.WordlyWise do
     case Poison.decode(output) do
       {:ok, results} ->
         {:ok, save_results(results)}
-      {:error, _error} ->
+      {:error, error} ->
+        Logger.error(output)
         {:error, "Could not parse wordly wise data."}
     end
   end

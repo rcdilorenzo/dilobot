@@ -4,8 +4,6 @@ defmodule DiloBot.Bot do
 
   import Application, only: [get_env: 2]
 
-  @id              get_env(:dilo_bot, :id)
-  @name            get_env(:dilo_bot, :bot_name)
   @reports_channel get_env(:dilo_bot, :reports_channel)
 
   def handle_connect(slack, state) do
@@ -14,9 +12,7 @@ defmodule DiloBot.Bot do
   end
 
   def handle_event(message = %{text: text, type: "message"}, slack, state) do
-    unless message.user == @id do
-      handle_slack_message(message, String.downcase(text), slack)
-    end
+    handle_slack_message(message, String.downcase(text), slack)
     {:ok, state}
   end
 

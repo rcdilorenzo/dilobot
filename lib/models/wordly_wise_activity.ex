@@ -100,7 +100,7 @@ defmodule WordlyWiseActivity do
   end
 
   def encode(wordly_wise_activity) do
-    Map.take(wordly_wise_activity, [:name, :grade, :lesson, :level, :date, :activity, :seconds, :score])
+    Map.take(wordly_wise_activity, [:id, :name, :grade, :lesson, :level, :date, :activity, :seconds, :score])
   end
 
   def today() do

@@ -3,7 +3,7 @@ defmodule DiloBot.Mixfile do
 
   def project do
     [app: :dilo_bot,
-     version: "0.1.0",
+     version: "0.3.0",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -12,13 +12,13 @@ defmodule DiloBot.Mixfile do
 
   def application do
     [applications: [:logger, :slack, :porcelain, :poison, :ecto,
-                    :postgrex, :cowboy, :plug, :table_rex, :basic_auth, :eex],
+                    :postgrex, :cowboy, :plug, :table_rex, :basic_auth, :eex, :httpotion],
      mod: {DiloBot, []}]
   end
 
   defp deps do
     [
-      {:slack, "~> 0.9.1"},
+      {:slack, "~> 0.14.0"},
       {:porcelain, "~> 2.0"},
       {:poison, "~> 3.0"},
       {:table_rex, "~> 0.8"},
@@ -27,7 +27,8 @@ defmodule DiloBot.Mixfile do
       {:cowboy, "~> 1.0.0"},
       {:plug, "~> 1.3"},
       {:basic_auth, "~> 2.1"},
-      {:distillery, "~> 1.0"}
+      {:distillery, "~> 1.0"},
+      {:httpotion, "~> 3.0"}
     ]
   end
 end

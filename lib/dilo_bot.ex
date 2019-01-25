@@ -9,7 +9,9 @@ defmodule DiloBot do
       worker(Slack.Bot, [DiloBot.Bot, [], api_token()]),
       supervisor(DiloBot.Repo, []),
       Plug.Adapters.Cowboy.child_spec(:http, DiloBot.Router, [],
-        [port: get_env(:dilo_bot, :port)])
+        [port: get_env(:dilo_bot, :port)]),
+      Plug.Adapters.Cowboy.child_spec(:http, DiloBot.SlackRouter, [],
+        [port: get_env(:dilo_bot, :slack_port)])
     ]
 
     opts = [strategy: :one_for_one, name: DiloBot.Supervisor]
@@ -17,6 +19,6 @@ defmodule DiloBot do
   end
 
   def api_token do
-    get_env(:slack, :api_token)
+    get_env(:slack, :bot_access_token)
   end
 end
